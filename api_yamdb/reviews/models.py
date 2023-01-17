@@ -10,6 +10,7 @@ class User(AbstractUser):
         ADMIN = 'admin'
 
     role = models.CharField(
+        max_length=10,
         choices=UserRole.choices,
         default=UserRole.USER,
     )
