@@ -4,15 +4,16 @@ from django.db import models
 
 class User(AbstractUser):
 
-    class UserRole(models.TextChoices):
-        USER = 'user',
-        MODERATOR = 'moderator',
-        ADMIN = 'admin'
+    USER_ROLE_CHOICES = [
+        ('USR', 'user'),
+        ('MOD', 'moderator'),
+        ('ADM', 'admin'),
+    ]
 
     role = models.CharField(
-        max_length=10,
-        choices=UserRole.choices,
-        default=UserRole.USER,
+        max_length=3,
+        choices=USER_ROLE_CHOICES,
+        default='USR',
     )
 
     bio = models.TextField(
