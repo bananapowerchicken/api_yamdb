@@ -20,3 +20,10 @@ class CustomUser(AbstractUser):
         'Биография',
         blank=True,
     )
+
+    email = models.EmailField(
+        verbose_name='Адрес электронной почты',
+        unique=True,
+    )
+
+    REQUIRED_FIELDS = ['email']
