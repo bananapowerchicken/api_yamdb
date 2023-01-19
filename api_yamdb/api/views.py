@@ -11,6 +11,7 @@ from .serializers import CustomUserSerializer, RegisterDataSerializer
 
 yamdb_mail = 'YaMDb@gmail.com'
 
+
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def register(request):
@@ -32,7 +33,18 @@ def register(request):
         fail_silently=False,
     )
 
-    return Response(status.HTTP_200_OK)
+    # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# # здесь мне необходимо написать проверку правильности токена user при 
+# # запросе по адресу /api/v1/auth/token/
+# # токен = confirmation code, который генерится при регистрации и привязывается
+# # к конкретному пользователю, явного хранения нет
+# @api_view(["POST"])
+# @permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
+# def check_user_token(request):
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
