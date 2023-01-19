@@ -48,3 +48,11 @@ class CustomUser(AbstractUser):
     )
 
     REQUIRED_FIELDS = ['email']
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(username=~"me"),
+                name="username_is_not_me"
+            )
+        ]
