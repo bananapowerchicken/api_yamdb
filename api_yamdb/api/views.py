@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 
 from reviews.models import CustomUser
-from .serializers import CustomUserSerializer, RegisterDataSerializer
+from .serializers import CustomUserSerializer, RegisterDataSerializer, TokenSerializer
 
 
 yamdb_mail = 'YaMDb@gmail.com'
@@ -45,6 +45,21 @@ def register(request):
 @permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
 def check_user_token(request):
     # мне тут необх извлечь токен из юзера
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()  # что делает эта штука?
+    user = get_object_or_404(
+        CustomUser,
+        username=serializer.validated_data['username']
+    )
+    if default_token_generator.check_token(
+        user, 
+        serializer.validated_data['confirmation_code']
+    ):
+        return Response(status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
