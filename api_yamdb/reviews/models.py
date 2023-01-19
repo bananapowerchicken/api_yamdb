@@ -52,7 +52,7 @@ class CustomUser(AbstractUser):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(username=~"me"),
+                check=~models.Q(username="me"),
                 name="username_is_not_me"
             )
         ]
