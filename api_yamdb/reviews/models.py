@@ -19,11 +19,32 @@ class CustomUser(AbstractUser):
     bio = models.TextField(
         'Биография',
         blank=True,
+        null=True,
     )
 
     email = models.EmailField(
-        verbose_name='Адрес электронной почты',
+        'Адрес электронной почты',
         unique=True,
+        max_length=254,
+    )
+
+    username = models.CharField(
+        'Имя пользователя',
+        max_length=150,
+        null=True,
+        unique=True,
+    )
+
+    first_name = models.CharField(
+        'Имя',
+        max_length=150,
+        null=True,
+    )
+
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=150,
+        null=True,
     )
 
     REQUIRED_FIELDS = ['email']
