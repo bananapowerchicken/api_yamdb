@@ -1,8 +1,14 @@
 from rest_framework import viewsets
 
-from reviews.models import Title
+from reviews.models import CustomUser, Title
 
-from .serializers import TitleSerializer
+from .serializers import CustomUserSerializer, TitleSerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    lookup_field = 'username'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
