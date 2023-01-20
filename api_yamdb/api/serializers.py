@@ -1,26 +1,26 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import CustomUser
+from reviews.models import User
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('username', 'email', 'first_name', 'last_name', 'bio',
                   'role')
-        model = CustomUser
+        model = User
 
 
 class RegisterDataSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all())
         ]
     )
     email = serializers.EmailField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all())
         ]
     )
 
@@ -31,8 +31,8 @@ class RegisterDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('username', 'email')
-        model = CustomUser
-        
+        model = User
+
     
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()

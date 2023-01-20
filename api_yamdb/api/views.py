@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 
-from reviews.models import CustomUser
-from .serializers import CustomUserSerializer, RegisterDataSerializer, TokenSerializer
+from reviews.models import User
+from .serializers import UserSerializer, RegisterDataSerializer, TokenSerializer
 
 
 yamdb_mail = 'YaMDb@gmail.com'
@@ -19,7 +19,7 @@ def register(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     user = get_object_or_404(
-        CustomUser,
+        User,
         username=serializer.validated_data['username']
     )
     # создаю токен и сразу привязываю его к объекту user
@@ -49,7 +49,7 @@ def check_user_token(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()  # что делает эта штука?
     user = get_object_or_404(
-        CustomUser,
+        User,
         username=serializer.validated_data['username']
     )
     if default_token_generator.check_token(
@@ -62,6 +62,6 @@ def check_user_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     lookup_field = 'username'
