@@ -44,11 +44,11 @@ def register(request):
 # к конкретному пользователю, явного хранения нет
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
-def check_user_token(request):
+def get_user_token(request):
     # мне тут необх извлечь токен из юзера
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()  # что делает эта штука?
+    # serializer.save()  # что делает эта штука?
     user = get_object_or_404(
         User,
         username=serializer.validated_data['username']
