@@ -4,11 +4,11 @@ from django.db import models
 
 class User(AbstractUser):
 
-    USER_ROLE_CHOICES = [
+    USER_ROLE_CHOICES = (
         ('USR', 'user'),
         ('MOD', 'moderator'),
         ('ADM', 'admin'),
-    ]
+    )
 
     role = models.CharField(
         max_length=3,
@@ -31,7 +31,6 @@ class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         max_length=150,
-        null=True,
         unique=True,
     )
 
