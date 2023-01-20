@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
 from .serializers import UserSerializer, RegisterDataSerializer, TokenSerializer
@@ -53,10 +54,11 @@ def check_user_token(request):
         username=serializer.validated_data['username']
     )
     if default_token_generator.check_token(
-        user, 
+        user,
         serializer.validated_data['confirmation_code']
     ):
-        return Response(status.HTTP_200_OK)
+        token = AccessToken.for_user(user)
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
