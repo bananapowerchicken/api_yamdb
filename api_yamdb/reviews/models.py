@@ -32,6 +32,7 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
+        # username__regex=r'^[\w.@+-]+\z'
     )
 
     first_name = models.CharField(
@@ -54,5 +55,10 @@ class User(AbstractUser):
             models.CheckConstraint(
                 check=~models.Q(username='me'),
                 name='username_is_not_me',
-            )
+            ),
+            models.CheckConstraint(
+                check=models.Q(username__regex=r'^[\w.@+-]+\z'),
+                name='username_contains_restricted_symbols',
+            )        
+            
         ]
