@@ -39,6 +39,7 @@ class User(AbstractUser):
         'Имя',
         max_length=150,
         null=True,
+        default=" "
     )
 
     last_name = models.CharField(
