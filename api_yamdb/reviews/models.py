@@ -32,7 +32,6 @@ class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         max_length=150,
-        null=True,
         unique=True,
     )
 
@@ -139,6 +138,7 @@ class Title(models.Model):
             )
         ]
 
+
 class Review(models.Model):
     """Модель отзыва."""
     title = models.ForeignKey(
@@ -180,4 +180,3 @@ class Review(models.Model):
 
     def __str__(self):
         return self.name[:15]
-        return self.text
