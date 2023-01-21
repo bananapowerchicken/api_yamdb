@@ -79,8 +79,8 @@ class Review(models.Model):
         'Оценка',
         help_text='Оцените произведение от 1 до 10',
         validators=[
-            MinValueValidator(1, message='Минимальная оценка - 1'),
-            MaxValueValidator(10, message='Максимальная оценка - 10')
+            MinValueValidator(1),
+            MaxValueValidator(10)
         ]
     )
     pub_date = models.DateTimeField(
@@ -88,6 +88,14 @@ class Review(models.Model):
         auto_now_add=True,
         db_index=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_review',
+                fields=['author', 'title'],
+            )
+        ]
 
     def __str__(self):
         return self.text
