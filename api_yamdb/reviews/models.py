@@ -33,13 +33,6 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
-        # username__regex=r'^[\w.@+-]+\z'
-        # validators=[
-        #     RegexValidator(
-        #         regex=r'^[\w.@+-]+\z',
-        #         message='Username contains restricted symbols',
-        #     ),
-        # ]
     )
 
     first_name = models.CharField(
@@ -57,6 +50,9 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ['email']
 
+    @property
+    def is_admin(self):
+        return self.role == 'ADM'
     # class Meta:
     #     constraints = [
     #         models.CheckConstraint(

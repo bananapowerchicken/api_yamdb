@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
 from .serializers import UserSerializer, RegisterDataSerializer, TokenSerializer
+from .permissions import IsAdmin
 
 
 yamdb_mail = 'YaMDb@gmail.com'
@@ -67,3 +68,4 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
+    permission_classes = (IsAdmin,)
