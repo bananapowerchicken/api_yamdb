@@ -1,8 +1,6 @@
+from django.db.models import Sum
 from rest_framework import serializers
-
-from reviews.models import User, Category, Genre, Title
-
-from reviews.models import Review, User
+from reviews.models import Category, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,6 +32,7 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(), slug_field='slug', many=True
     )
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -41,10 +40,20 @@ class TitleSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
+            'rating',
             'description',
             'category',
             'genre',
         )
+
+    def get_rating(self, obj):
+        score_sum = Review.objects.filter(title_id=obj.id).aggregate(
+            Sum('score')).get('score__sum')
+        score_sum = int(0 if score_sum is None else score_sum)
+        score_count = Review.objects.filter(title_id=obj.id).count()
+        if score_count == 0:
+            return 0
+        return int(score_sum / score_count)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
