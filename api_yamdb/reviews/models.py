@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import RegexValidator
 
 
 class User(AbstractUser):
@@ -33,6 +34,12 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         # username__regex=r'^[\w.@+-]+\z'
+        # validators=[
+        #     RegexValidator(
+        #         regex=r'^[\w.@+-]+\z',
+        #         message='Username contains restricted symbols',
+        #     ),
+        # ]
     )
 
     first_name = models.CharField(
@@ -56,9 +63,9 @@ class User(AbstractUser):
                 check=~models.Q(username='me'),
                 name='username_is_not_me',
             ),
-            models.CheckConstraint(
-                check=models.Q(username__regex=r'^[\w.@+-]+\z'),
-                name='username_contains_restricted_symbols',
-            )        
+            # models.CheckConstraint(
+            #     check=models.Q(username__regex=r'^[\w.@+-]+\z'),
+            #     name='username_contains_restricted_symbols',
+            # )        
             
         ]
