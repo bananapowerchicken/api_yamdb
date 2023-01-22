@@ -138,6 +138,9 @@ class Title(models.Model):
             )
         ]
 
+    def __str__(self):
+        return self.name[:15]
+
 
 class Review(models.Model):
     """Модель отзыва."""
@@ -179,4 +182,37 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.name[:15]
+        return self.text
+
+
+class Comment(models.Model):
+    """Модель комментария к отзыву."""
+    title = models.ForeignKey(
+        Title,
+        verbose_name='Произведение',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    review = models.ForeignKey(
+        Review,
+        verbose_name='Отзыв',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField(
+        'Текст комментария'
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор комментария',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления комментария',
+        auto_now_add=True,
+        db_index=True
+    )
+
+    def __str__(self):
+        return self.text
