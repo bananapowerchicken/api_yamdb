@@ -39,14 +39,12 @@ def register(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# получение токена после регистрации для люого желающего по API
+# получение токена после регистрации для любого желающего по API
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
-def get_user_token(request):
-    # мне тут необх извлечь токен из юзера
+def get_user_token(request):    
     serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    # serializer.save()  # что делает эта штука?
+    serializer.is_valid(raise_exception=True)    
     user = get_object_or_404(
         User,
         username=serializer.validated_data['username']

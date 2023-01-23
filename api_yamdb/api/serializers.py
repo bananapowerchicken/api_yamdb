@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from reviews.models import User
+from django.core.validators import RegexValidator, MaxLengthValidator
 
 
 class UserSerializer(serializers.ModelSerializer):
