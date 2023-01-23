@@ -63,7 +63,7 @@ def get_user_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ['post', 'get', 'patch', 'delete']
+    http_method_names = ['post', 'get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
