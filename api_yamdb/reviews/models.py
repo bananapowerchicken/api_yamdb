@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxLengthValidator
 
 
 class User(AbstractUser):
@@ -35,6 +35,7 @@ class User(AbstractUser):
         unique=True,
         validators=[
             RegexValidator(r'^[\w.@+-]'),
+            # MaxLengthValidator(150),  # вот этот валидатор- уже на регистрацию через admin не повлиял
         ],
     )
 
@@ -56,15 +57,3 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == 'ADM'
-    # class Meta:
-    #     constraints = [
-    #         models.CheckConstraint(
-    #             check=~models.Q(username='me'),
-    #             name='username_is_not_me',
-    #         ),
-    #         # models.CheckConstraint(
-    #         #     check=models.Q(username__regex=r'^[\w.@+-]+\z'),
-    #         #     name='username_contains_restricted_symbols',
-    #         # )        
-            
-    #     ]
