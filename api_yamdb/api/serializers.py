@@ -16,6 +16,10 @@ class UserSerializer(serializers.ModelSerializer):
     #             ),
     #         ]
     # )
+    # def validate_username(self, value):
+    # #     # а эти строки просто работают корректно как валидатор
+    #     if  >150:
+    #         raise serializers.ValidationError("Username must be under 150 symbols")
 
     class Meta:
         fields = ('username', 'email', 'first_name', 'last_name', 'bio',

@@ -33,6 +33,9 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
+        validators=[
+            RegexValidator(r'^[\w.@+-]'),
+        ],
     )
 
     first_name = models.CharField(
