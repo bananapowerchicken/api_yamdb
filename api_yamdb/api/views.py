@@ -9,24 +9,27 @@ from rest_framework_simplejwt.tokens import AccessToken
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer, TitleSerializer,
                           UserSerializer, RegisterDataSerializer, TokenSerializer,
-                          UserEditSerializer)
+                          UserEditSerializer, AdminRegisterDataSerializer)
 from reviews.models import User, Category, Comment, Genre, Review, Title
 from .permissions import IsAdmin
+from http import HTTPStatus
 
 
 yamdb_mail = 'YaMDb@gmail.com'
 
 # регистрация по api для любого желающего
 @api_view(["POST"])
-@permission_classes([permissions.AllowAny,])
+@permission_classes([permissions.AllowAny])
 def register(request):
-    serializer = RegisterDataSerializer(data=request.data)
+    serializer = AdminRegisterDataSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     user = get_object_or_404(
         User,
-        username=serializer.validated_data['username']
+        username=serializer.validated_data['username'],
+        # first_name=serializer.validated_data['first_name'],
     )
+
     # создаю токен и сразу привязываю его к объекту user
     confirmation_code = default_token_generator.make_token(user)
     # и теперь надо этот код отправить по почте
@@ -38,8 +41,15 @@ def register(request):
         fail_silently=False,
     )
 
-    # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    #  пробую сделать возвращаемый словарь с минимумом данных
+    res = {
+        'email': user.email,
+        'username': user.username
+    }
+
+    # return Response(serializer.data, status=HTTPStatus.OK)
+    return Response(res, status=HTTPStatus.OK)
+    
 
 
 # получение токена после регистрации для любого желающего по API
@@ -62,40 +72,11 @@ def get_user_token(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# регистрация по api для любого желающего
-@api_view(["POST"])
-@permission_classes([IsAdmin,])
-def register_admin(request):
-    serializer = RegisterDataSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username']
-    )
-    # создаю токен и сразу привязываю его к объекту user
-    confirmation_code = default_token_generator.make_token(user)
-    # и теперь надо этот код отправить по почте
-    send_mail(
-        'YaMDb registration',
-        f'Here is your confirmation code to use: {confirmation_code}',
-        yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
-        [user.email],
-        fail_silently=False,
-    )
-
-    # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class BaseUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
                         viewsets.GenericViewSet): 
     pass  
 
-# class FollowViewSet(BaseFollowViewSet): 
 
-
-# class UserViewSet(viewsets.ModelViewSet):
 class UserViewSet(BaseUserViewSet):
     # http_method_names = ['post', 'get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
     queryset = User.objects.all()

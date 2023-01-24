@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
+# Api registration
 class RegisterDataSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value.lower() == 'me':
@@ -19,6 +20,17 @@ class RegisterDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('username', 'email')
+        model = User
+
+
+class AdminRegisterDataSerializer(serializers.ModelSerializer):
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError("Username 'me' is not valid")
+        return value
+
+    class Meta:
+        fields = ('username', 'email',  'first_name', 'last_name')
         model = User
 
 
