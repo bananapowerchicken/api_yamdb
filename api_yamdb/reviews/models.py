@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-from django.core.validators import RegexValidator, MaxLengthValidator
 
 
 class User(AbstractUser):
@@ -34,10 +33,9 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
-        validators=[
-            # RegexValidator(r'^[\w.@+-]'),           
+        validators=[      
             RegexValidator(r'^[\w-]+$', "username содержит некорректные символы"),
-            MaxLengthValidator(3),  # вот этот валидатор- уже на регистрацию через admin не повлиял
+            # MaxLengthValidator(3),  # вот этот валидатор- уже на регистрацию через admin не повлиял
         ],
     )
 

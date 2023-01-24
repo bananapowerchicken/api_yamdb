@@ -18,7 +18,7 @@ yamdb_mail = 'YaMDb@gmail.com'
 
 # регистрация по api для любого желающего
 @api_view(["POST"])
-@permission_classes([permissions.AllowAny])
+@permission_classes([permissions.AllowAny,])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -62,8 +62,33 @@ def get_user_token(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# регистрация по api для любого желающего
+@api_view(["POST"])
+@permission_classes([IsAdmin,])
+def register_admin(request):
+    serializer = RegisterDataSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data['username']
+    )
+    # создаю токен и сразу привязываю его к объекту user
+    confirmation_code = default_token_generator.make_token(user)
+    # и теперь надо этот код отправить по почте
+    send_mail(
+        'YaMDb registration',
+        f'Here is your confirmation code to use: {confirmation_code}',
+        yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
+        [user.email],
+        fail_silently=False,
+    )
+
+    # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ['post', 'get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
+    http_method_names = ['get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -94,6 +119,30 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    # @api_view(["POST"])
+    # # @permission_classes([permissions.AllowAny])
+    # def register(request):
+    #     serializer = RegisterDataSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     user = get_object_or_404(
+    #         User,
+    #         username=serializer.validated_data['username']
+    #     )
+    #     # создаю токен и сразу привязываю его к объекту user
+    #     confirmation_code = default_token_generator.make_token(user)
+    #     # и теперь надо этот код отправить по почте
+    # send_mail(
+    #     'YaMDb registration',
+    #     f'Here is your confirmation code to use:', # {confirmation_code}',
+    #     'YaMDb@gmail.com',  # мб тут просто None поставить и это вообще не нужно?        
+    #     ['admin3@yamdb.fake'],
+    #     fail_silently=False,
+    # )
+
+    #     # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
