@@ -1,18 +1,20 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
+from .filters import TitleFilterSet
+from .permissions import IsAdmin, TitlePermission
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer,
-                          UserSerializer, RegisterDataSerializer, TokenSerializer,
-                          UserEditSerializer)
-from reviews.models import User, Category, Comment, Genre, Review, Title
-from .permissions import IsAdmin
-
+                          GenreSerializer, RegisterDataSerializer,
+                          ReviewSerializer, TitleSerializer,
+                          TitleSerializerCreate, TitleSerializerRead,
+                          TokenSerializer, UserEditSerializer, UserSerializer)
 
 yamdb_mail = 'YaMDb@gmail.com'
 
@@ -45,9 +47,9 @@ def register(request):
 # получение токена после регистрации для любого желающего по API
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
-def get_user_token(request):    
+def get_user_token(request):
     serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)    
+    serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
         User,
         username=serializer.validated_data['username']
@@ -97,21 +99,36 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы с произведениями."""
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
+    permission_classes = (TitlePermission,)
     lookup_field = 'name'
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilterSet
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH', 'DELETE',):
+            return TitleSerializerCreate
+        return TitleSerializerRead
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы с категориями."""
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
+    permission_classes = (TitlePermission,)
+    filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
 
 
 class GenreViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы с жанрами."""
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
+    permission_classes = (TitlePermission,)
+    filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
 
@@ -146,4 +163,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, title=title, review=review)
-

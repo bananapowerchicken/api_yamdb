@@ -1,7 +1,9 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (MaxLengthValidator, MaxValueValidator,
+                                    MinValueValidator, RegexValidator)
 from django.db import models
-from django.core.validators import RegexValidator, MaxLengthValidator
+
+from .validators import year_validator
 
 
 class User(AbstractUser):
@@ -61,6 +63,7 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
+    """Модель для работы с категориями"""
     name = models.CharField(
         max_length=256,
         default='--Пусто--',
@@ -81,6 +84,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """Модель для работы с жанрами"""
     name = models.CharField(
         max_length=256,
         verbose_name='Название жанра'
@@ -100,12 +104,14 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Модель для работы с произведениями"""
     name = models.CharField(
         max_length=256,
         verbose_name='Название произведения',
         blank=False
     )
     year = models.SmallIntegerField(
+        validators=[year_validator],
         verbose_name='Год создания произведения'
     )
     description = models.TextField(
