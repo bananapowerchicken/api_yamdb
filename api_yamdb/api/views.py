@@ -26,7 +26,7 @@ def register(request):
     print('IN REGISTER 2')  # вот тут останавливается - перед is valid, а дальше бросается exception
 
     #  вот это условие пофиксило мне мои злосчастные тесты
-    if User.objects.filter(username=request.POST.get('username')).exists():    
+    if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
         print('OLD')
         # return Response(status=HTTPStatus.OK)
         user = User.objects.get(username=request.POST.get('username'))
