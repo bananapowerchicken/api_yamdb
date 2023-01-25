@@ -22,7 +22,7 @@ yamdb_mail = 'YaMDb@gmail.com'
 @permission_classes([permissions.AllowAny])
 def register(request):
     print('IN REGISTER 1')
-    serializer = AdminRegisterDataSerializer(data=request.data)
+    serializer = RegisterDataSerializer(data=request.data)
     print('IN REGISTER 2')  # вот тут останавливается - перед is valid, а дальше бросается exception
 
     #  вот это условие пофиксило мне мои злосчастные тесты
@@ -78,7 +78,75 @@ def register(request):
         'username': user.username
     }
 
+    # нужно еще условие, отличающее, кто создал - admin или просто user либо 2 раздельных ф-ии
+
     return Response(res, status=HTTPStatus.OK)
+    # return Response(status=HTTPStatus.OK)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def register_by_admin(request):
+    print('IN REGISTER 1')
+    serializer = AdminRegisterDataSerializer(data=request.data)
+    print('IN REGISTER 2')  # вот тут останавливается - перед is valid, а дальше бросается exception
+
+    #  вот это условие пофиксило мне мои злосчастные тесты
+    if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
+        print('OLD')
+        # return Response(status=HTTPStatus.OK)
+        user = User.objects.get(username=request.POST.get('username'))
+        # создаю токен и сразу привязываю его к объекту user
+        confirmation_code = default_token_generator.make_token(user)
+        # и теперь надо этот код отправить по почте
+        send_mail(
+            'YaMDb registration',
+            f'Here is your confirmation code to use: {confirmation_code}',
+            yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
+            [user.email],
+            fail_silently=False,
+        )
+
+        return Response(status=HTTPStatus.OK)
+    else:
+        print('NEW')
+
+    serializer.is_valid(raise_exception=True)  # эта строка дб и дб True, тут и выбрасыается исключение с ошибкой 404 видимо - эта проверка нужна только для новых юзеров
+    print('IN REGISTER 3')
+    serializer.save()
+    print('IN REGISTER 4')
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data['username'],
+        # first_name=serializer.validated_data['first_name'],
+    )
+    # user, created = User.objects.get_or_create(username=serializer.validated_data['username'], email=serializer.data['email'])
+
+    # print(user)
+    # if request.user.is_authenticated:
+    #     print('EXIST')
+    #     return Response(status=HTTPStatus.OK)
+
+    # # создаю токен и сразу привязываю его к объекту user
+    # confirmation_code = default_token_generator.make_token(user)
+    # # и теперь надо этот код отправить по почте
+    # send_mail(
+    #     'YaMDb registration',
+    #     f'Here is your confirmation code to use: {confirmation_code}',
+    #     yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
+    #     [user.email],
+    #     fail_silently=False,
+    # )
+
+    # #  пробую сделать возвращаемый словарь с минимумом данных
+    # res = {
+    #     'email': user.email,
+    #     'username': user.username
+    # }
+
+    # нужно еще условие, отличающее, кто создал - admin или просто user либо 2 раздельных ф-ии
+
+    return Response(serializer.data, status=HTTPStatus.CREATED)
     # return Response(status=HTTPStatus.OK)
 
 
