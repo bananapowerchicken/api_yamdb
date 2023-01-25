@@ -35,7 +35,6 @@ class User(AbstractUser):
         unique=True,
         validators=[      
             RegexValidator(r'^[\w-]+$', "username содержит некорректные символы"),
-            # MaxLengthValidator(3),  # вот этот валидатор- уже на регистрацию через admin не повлиял
         ],
     )
 
