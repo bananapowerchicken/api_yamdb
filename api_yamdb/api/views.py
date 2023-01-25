@@ -29,6 +29,19 @@ def register(request):
     if User.objects.filter(username=request.POST.get('username')).exists():    
         print('OLD')
         # return Response(status=HTTPStatus.OK)
+        user = User.objects.get(username=request.POST.get('username'))
+        # создаю токен и сразу привязываю его к объекту user
+        confirmation_code = default_token_generator.make_token(user)
+        # и теперь надо этот код отправить по почте
+        send_mail(
+            'YaMDb registration',
+            f'Here is your confirmation code to use: {confirmation_code}',
+            yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
+            [user.email],
+            fail_silently=False,
+        )
+
+        return Response(status=HTTPStatus.OK)
     else:
         print('NEW')
 
