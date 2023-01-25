@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -13,6 +12,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 from reviews.models import User, Category, Comment, Genre, Review, Title
 from .permissions import IsAdmin
 from http import HTTPStatus
+from .utils import send_confirmation_code
 
 
 yamdb_mail = 'YaMDb@gmail.com'
@@ -23,15 +23,7 @@ def register(request):
     serializer = RegisterDataSerializer(data=request.data)
     if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
         user = User.objects.get(username=request.POST.get('username'))
-        confirmation_code = default_token_generator.make_token(user)
-
-        send_mail(
-            'YaMDb registration',
-            f'Here is your confirmation code to use: {confirmation_code}',
-            yamdb_mail,
-            [user.email],
-            fail_silently=False,
-        )
+        send_confirmation_code(user)
 
         return Response(status=HTTPStatus.OK)
 
@@ -41,15 +33,7 @@ def register(request):
         User,
         username=serializer.validated_data['username'],
     )
-
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        'YaMDb registration',
-        f'Here is your confirmation code to use: {confirmation_code}',
-        yamdb_mail,
-        [user.email],
-        fail_silently=False,
-    )
+    send_confirmation_code(user)
 
     return Response(serializer.data, status=HTTPStatus.OK)
 
@@ -61,14 +45,7 @@ def register_by_admin(request):
 
     if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
         user = User.objects.get(username=request.POST.get('username')) 
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            'YaMDb registration',
-            f'Here is your confirmation code to use: {confirmation_code}',
-            yamdb_mail,
-            [user.email],
-            fail_silently=False,
-        )
+        send_confirmation_code(user)
 
         return Response(status=HTTPStatus.OK)
 
@@ -81,9 +58,9 @@ def register_by_admin(request):
 
     return Response(serializer.data, status=HTTPStatus.CREATED)
 
-# получение токена после регистрации для любого желающего по API
+
 @api_view(["POST"])
-@permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
+@permission_classes([permissions.AllowAny])
 def get_user_token(request):    
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)    
@@ -107,7 +84,6 @@ class BaseUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.D
 
 
 class UserViewSet(BaseUserViewSet):
-    # http_method_names = ['post', 'get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
