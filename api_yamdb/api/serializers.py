@@ -11,7 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
-# Api registration
 class RegisterDataSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value.lower() == 'me':

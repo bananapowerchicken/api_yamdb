@@ -15,14 +15,26 @@ from http import HTTPStatus
 from .utils import send_confirmation_code
 
 
-yamdb_mail = 'YaMDb@gmail.com'
+
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
-    if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
-        user = User.objects.get(username=request.POST.get('username'))
+
+    # # # для postman
+    # username=request.data['username']  # так работает в реале в постман, но не работает в тестах
+    # email=request.data['email']  # так работает в реале в постман
+
+    # # для тестов
+    # username=request.POST.get('username')
+    # email=request.POST.get('email')
+
+    email=request.data.get('email')
+    username=request.data.get('username')
+
+    if User.objects.filter(username=username, email=email).exists():  
+        user = User.objects.get(username=username, email=email)        
         send_confirmation_code(user)
 
         return Response(status=HTTPStatus.OK)
