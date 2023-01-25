@@ -21,14 +21,32 @@ yamdb_mail = 'YaMDb@gmail.com'
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def register(request):
+    print('IN REGISTER 1')
     serializer = AdminRegisterDataSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    print('IN REGISTER 2')  # вот тут останавливается - перед is valid, а дальше бросается exception
+
+    #  вот это условие пофиксило мне мои злосчастные тесты
+    if User.objects.filter(username=request.data['username']).exists():
+        print('OLD')
+        # return Response(status=HTTPStatus.OK)
+    else:
+        print('NEW')
+
+    serializer.is_valid(raise_exception=True)  # эта строка дб и дб True, тут и выбрасыается исключение с ошибкой 404 видимо
+    print('IN REGISTER 3')
     serializer.save()
+    print('IN REGISTER 4')
     user = get_object_or_404(
         User,
         username=serializer.validated_data['username'],
         # first_name=serializer.validated_data['first_name'],
     )
+    # user, created = User.objects.get_or_create(username=serializer.validated_data['username'], email=serializer.data['email'])
+
+    # print(user)
+    # if request.user.is_authenticated:
+    #     print('EXIST')
+    #     return Response(status=HTTPStatus.OK)
 
     # создаю токен и сразу привязываю его к объекту user
     confirmation_code = default_token_generator.make_token(user)
@@ -47,9 +65,8 @@ def register(request):
         'username': user.username
     }
 
-    # return Response(serializer.data, status=HTTPStatus.OK)
     return Response(res, status=HTTPStatus.OK)
-    
+    # return Response(status=HTTPStatus.OK)
 
 
 # получение токена после регистрации для любого желающего по API
@@ -82,7 +99,7 @@ class UserViewSet(BaseUserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAdmin,)    
 
     @action(
         methods=[
@@ -91,7 +108,7 @@ class UserViewSet(BaseUserViewSet):
         ],
         detail=False,
         url_path="me",
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=[permissions.IsAuthenticated], 
         serializer_class=UserEditSerializer,
     )
     def users_own_profile(self, request):
