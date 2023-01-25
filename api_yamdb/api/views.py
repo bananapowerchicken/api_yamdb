@@ -26,13 +26,13 @@ def register(request):
     print('IN REGISTER 2')  # вот тут останавливается - перед is valid, а дальше бросается exception
 
     #  вот это условие пофиксило мне мои злосчастные тесты
-    if User.objects.filter(username=request.data['username']).exists():
+    if User.objects.filter(username=request.POST.get('username')).exists():    
         print('OLD')
         # return Response(status=HTTPStatus.OK)
     else:
         print('NEW')
 
-    serializer.is_valid(raise_exception=True)  # эта строка дб и дб True, тут и выбрасыается исключение с ошибкой 404 видимо
+    serializer.is_valid(raise_exception=True)  # эта строка дб и дб True, тут и выбрасыается исключение с ошибкой 404 видимо - эта проверка нужна только для новых юзеров
     print('IN REGISTER 3')
     serializer.save()
     print('IN REGISTER 4')
