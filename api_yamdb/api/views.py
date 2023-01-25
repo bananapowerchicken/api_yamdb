@@ -22,14 +22,6 @@ from .utils import send_confirmation_code
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
 
-    # # # для postman
-    # username=request.data['username']  # так работает в реале в постман, но не работает в тестах
-    # email=request.data['email']  # так работает в реале в постман
-
-    # # для тестов
-    # username=request.POST.get('username')
-    # email=request.POST.get('email')
-
     email=request.data.get('email')
     username=request.data.get('username')
 
@@ -55,8 +47,11 @@ def register(request):
 def register_by_admin(request):
     serializer = AdminRegisterDataSerializer(data=request.data)
 
-    if User.objects.filter(username=request.POST.get('username'), email=request.POST.get('email')).exists():    
-        user = User.objects.get(username=request.POST.get('username')) 
+    email=request.data.get('email')
+    username=request.data.get('username')
+
+    if User.objects.filter(username=username, email=email).exists():  
+        user = User.objects.get(username=username, email=email)        
         send_confirmation_code(user)
 
         return Response(status=HTTPStatus.OK)
