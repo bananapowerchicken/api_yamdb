@@ -109,6 +109,8 @@ AUTH_USER_MODEL = 'reviews.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
+DEFAULT_FROM_EMAIL = 'admin_YaMDb@yamdb.fake'
+
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 REST_FRAMEWORK = {
