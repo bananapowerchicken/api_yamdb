@@ -24,7 +24,7 @@ router_v1.register(
 
 urlpatterns = [    
     path('v1/auth/signup/', register, name='register'),
-    path('v1/users/', register_by_admin, name='register_by_admin'),
+    # path('v1/users/', register_by_admin, name='register_by_admin'),
     path('v1/auth/token/', get_user_token, name='token'),
     path('v1/', include(router_v1.urls)),
 ]
