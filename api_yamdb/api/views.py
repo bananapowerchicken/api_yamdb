@@ -14,7 +14,7 @@ from .permissions import IsAdmin
 from http import HTTPStatus
 from .utils import send_confirmation_code
 from rest_framework import filters
-
+from rest_framework.pagination import PageNumberPagination
 
 
 
@@ -93,7 +93,7 @@ def get_user_token(request):
 
 # class UserViewSet(BaseUserViewSet):
 class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ('get', 'patch', 'delete')
+    http_method_names = ('get', 'patch', 'delete', 'post')
     queryset = User.objects.all()
     serializer_class = UserSerializer 
     lookup_field = 'username'  # дает возможность добавить к url /username/
@@ -114,6 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path='me',
         permission_classes=[permissions.IsAuthenticated],    
         serializer_class=UserEditSerializer,     
+        pagination_class = PageNumberPagination
     )
     def users_own_profile(self, request):
         user = request.user

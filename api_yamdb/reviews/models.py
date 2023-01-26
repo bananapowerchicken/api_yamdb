@@ -65,6 +65,12 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN
+    
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
 
 
 class Category(models.Model):
