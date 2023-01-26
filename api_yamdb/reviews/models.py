@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 
 
@@ -14,17 +15,11 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-    # USER_ROLE_CHOICES = (
-    #     ('USR', 'user'),
-    #     ('MOD', 'moderator'),
-    #     ('ADM', 'admin'),
-    # )
-
+   
     role = models.CharField(
         max_length=150,
         choices=USER_ROLE_CHOICES,
-        # default='USR',
-        default=USER
+        default=USER,
     )
 
     bio = models.TextField(
@@ -51,7 +46,7 @@ class User(AbstractUser):
     first_name = models.CharField(
         'Имя',
         max_length=150,
-        null=True,        
+        null=True,
     )
 
     last_name = models.CharField(
@@ -64,7 +59,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return self.role == self.ADMIN     
     
     class Meta:
         ordering = ['id']

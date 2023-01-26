@@ -1,21 +1,20 @@
-from rest_framework import viewsets, permissions, status, mixins
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework_simplejwt.tokens import AccessToken
-
-from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer,
-                          UserSerializer, RegisterDataSerializer, TokenSerializer,
-                          UserEditSerializer, AdminRegisterDataSerializer)
-from reviews.models import User, Category, Comment, Genre, Review, Title
-from .permissions import IsAdmin
 from http import HTTPStatus
-from .utils import send_confirmation_code
-from rest_framework import filters
-from rest_framework.pagination import PageNumberPagination
 
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
+from .permissions import IsAdmin
+from .serializers import (CategorySerializer, CommentSerializer, GenreSerializer,
+                          RegisterDataSerializer, ReviewSerializer,
+                          TitleSerializer, TokenSerializer, UserEditSerializer,
+                          UserSerializer)
+from .utils import send_confirmation_code
 
 
 @api_view(["POST"])
@@ -26,8 +25,8 @@ def register(request):
     email=request.data.get('email')
     username=request.data.get('username')
 
-    if User.objects.filter(username=username, email=email).exists():  
-        user = User.objects.get(username=username, email=email)        
+    if User.objects.filter(username=username, email=email).exists():
+        user = User.objects.get(username=username, email=email)
         send_confirmation_code(user)
 
         return Response(status=HTTPStatus.OK)
@@ -41,31 +40,6 @@ def register(request):
     send_confirmation_code(user)
 
     return Response(serializer.data, status=HTTPStatus.OK)
-
-
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def register_by_admin(request):
-    serializer = AdminRegisterDataSerializer(data=request.data)
-
-    email=request.data.get('email')
-    username=request.data.get('username')
-
-    if User.objects.filter(username=username, email=email).exists():  
-        user = User.objects.get(username=username, email=email)        
-        send_confirmation_code(user)
-
-        return Response(status=HTTPStatus.OK)
-
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username'],
-    )
-
-    return Response(serializer.data, status=HTTPStatus.CREATED)
-
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
@@ -85,31 +59,18 @@ def get_user_token(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# через миксины оплучается, что неудобно, т к за put и patch отвечает 1 миксин
-# class BaseUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
-#                         viewsets.GenericViewSet): 
-#     pass  
 
-
-# class UserViewSet(BaseUserViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'patch', 'delete', 'post')
     queryset = User.objects.all()
     serializer_class = UserSerializer 
-    lookup_field = 'username'  # дает возможность добавить к url /username/
-    permission_classes = ( IsAdmin , )  # не дает доступ администратору, только суперюзеру!!!!
+    lookup_field = 'username'
+    permission_classes = ( IsAdmin , )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-    
-# #     @action(detail=False, methods=["get"])
-# #     def get_users(self, request):
-# #         if not request.user.is_authenticated:
-# #             return Response(status=HTTPStatus.UNAUTHORIZED)
-# #         return Response(status=HTTPStatus.FORBIDDEN)
 
-    # это отвечает за изменение и получение информации пользователя о себе - решает 9 тестов
     @action(
-        methods=['get', 'patch', ], # как будто вот такое ограничение через action дает нежелаемый результат - ответ 403 вместо 405
+        methods=['get', 'patch'],
         detail=False,
         url_path='me',
         permission_classes=[permissions.IsAuthenticated],    
@@ -118,7 +79,6 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def users_own_profile(self, request):
         user = request.user
-        # print('IN ME')
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
@@ -131,43 +91,7 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        # if request.method == 'PUT':
-        #     return(HTTPStatus.METHOD_NOT_ALLOWED)
-
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)   
-
-# class UserViewSet(viewsets.ModelViewSet):
-#     http_method_names = ['get', 'post', 'patch', 'delete']
-#     lookup_field = 'username'
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = (IsAdmin,)
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('username',)
-
-#     def list(self, request):
-#         if not request.user.is_authenticated:
-#             return Response(HTTPStatus.FORBIDDEN)
-#         return Response(HTTPStatus.OK)
-
-#     @action(
-#     methods=['GET', 'PATCH'],
-#     detail=False,
-#     url_path='me',
-#     permission_classes=[permissions.IsAuthenticated]
-#     )
-#     def me_page(self, request):  # то есть тут я так понимаю любым мб название ф-ии
-#         if request.method == 'GET':
-#             serializer = UserSerializer(request.user)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         if request.method == 'PATCH':
-#             serializer = UserSerializer(
-#             request.user, data=request.data, partial=True)
-#         if serializer.is_valid():
-#             serializer.save(role=request.user.role)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         return Response(serializer.errors,
-#         status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
