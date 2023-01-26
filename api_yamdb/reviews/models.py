@@ -4,17 +4,27 @@ from django.db import models
 
 
 class User(AbstractUser):
+    
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
 
-    USER_ROLE_CHOICES = (
-        ('USR', 'user'),
-        ('MOD', 'moderator'),
-        ('ADM', 'admin'),
-    )
+    USER_ROLE_CHOICES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+    # USER_ROLE_CHOICES = (
+    #     ('USR', 'user'),
+    #     ('MOD', 'moderator'),
+    #     ('ADM', 'admin'),
+    # )
 
     role = models.CharField(
-        max_length=3,
+        max_length=150,
         choices=USER_ROLE_CHOICES,
-        default='USR',
+        # default='USR',
+        default=USER
     )
 
     bio = models.TextField(
@@ -41,8 +51,7 @@ class User(AbstractUser):
     first_name = models.CharField(
         'Имя',
         max_length=150,
-        null=True,
-        # default=" "
+        null=True,        
     )
 
     last_name = models.CharField(
@@ -55,7 +64,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == 'ADM'
+        return self.role == self.ADMIN
 
 
 class Category(models.Model):

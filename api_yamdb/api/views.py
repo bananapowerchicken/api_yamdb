@@ -85,20 +85,21 @@ def get_user_token(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+# через миксины оплучается, что неудобно, т к за put и patch отвечает 1 миксин
 # class BaseUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
 #                         viewsets.GenericViewSet): 
 #     pass  
 
 
-# # class UserViewSet(BaseUserViewSet):
+# class UserViewSet(BaseUserViewSet):
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ('get', 'patch', 'delete')
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    # permission_classes=[permissions.AllowAny]
-    # http_method_names = ['get']
+    serializer_class = UserSerializer 
     lookup_field = 'username'  # дает возможность добавить к url /username/
-    permission_classes = (IsAdmin, permissions.IsAuthenticated, )  # этот пермишн дает ошибку 405   
+    permission_classes = ( IsAdmin , )  # не дает доступ администратору, только суперюзеру!!!!
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
     
 # #     @action(detail=False, methods=["get"])
 # #     def get_users(self, request):
@@ -108,20 +109,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
     # это отвечает за изменение и получение информации пользователя о себе - решает 9 тестов
     @action(
-        methods=[
-            "get",
-            "patch",
-        ],
+        methods=['get', 'patch', ], # как будто вот такое ограничение через action дает нежелаемый результат - ответ 403 вместо 405
         detail=False,
-        url_path="me",
-        permission_classes=[permissions.IsAuthenticated],         
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],    
+        serializer_class=UserEditSerializer,     
     )
     def users_own_profile(self, request):
         user = request.user
-        if request.method == "GET":
+        # print('IN ME')
+        if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
-        if request.method == "PATCH":
+        if request.method == 'PATCH':
             serializer = self.get_serializer(
                 user,
                 data=request.data,
@@ -130,6 +130,9 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        # if request.method == 'PUT':
+        #     return(HTTPStatus.METHOD_NOT_ALLOWED)
+
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)   
 
 # class UserViewSet(viewsets.ModelViewSet):
