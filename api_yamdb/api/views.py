@@ -97,8 +97,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     # permission_classes=[permissions.AllowAny]
     # http_method_names = ['get']
-#     # lookup_field = 'username'
-    # permission_classes = (IsAdmin, permissions.IsAuthenticated, )  # этот пермишн дает ошибку 405   
+    lookup_field = 'username'  # дает возможность добавить к url /username/
+    permission_classes = (IsAdmin, permissions.IsAuthenticated, )  # этот пермишн дает ошибку 405   
     
 # #     @action(detail=False, methods=["get"])
 # #     def get_users(self, request):
@@ -106,7 +106,7 @@ class UserViewSet(viewsets.ModelViewSet):
 # #             return Response(status=HTTPStatus.UNAUTHORIZED)
 # #         return Response(status=HTTPStatus.FORBIDDEN)
 
-
+    # это отвечает за изменение и получение информации пользователя о себе - решает 9 тестов
     @action(
         methods=[
             "get",
@@ -119,10 +119,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def users_own_profile(self, request):
         user = request.user
         if request.method == "GET":
-
-            # if not request.user.is_admin or request.user.is_superuser:
-            #     return Response(HTTPStatus.FORBIDDEN)
-
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=HTTPStatus.OK)
         if request.method == "PATCH":
