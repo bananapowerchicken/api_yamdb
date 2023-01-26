@@ -67,7 +67,6 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
 
-
 class Category(models.Model):
     name = models.CharField(
         max_length=256,
