@@ -1,6 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from http import HTTPStatus
@@ -9,14 +9,15 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
-from .filters import TitleFilterSet
-from .permissions import IsAdmin, TitlePermission
+# from .filters import TitleFilterSet
+from .permissions import IsAdmin, TitlePermission, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, RegisterDataSerializer,
                           ReviewSerializer, TitleSerializer,
                           TitleSerializerCreate, TitleSerializerRead,
                           TokenSerializer, UserEditSerializer, UserSerializer)
 from .utils import send_confirmation_code
+from rest_framework import mixins
 
 
 @api_view(["POST"])
@@ -102,8 +103,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (TitlePermission,)
     lookup_field = 'name'
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = TitleFilterSet
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_class = TitleFilterSet
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
@@ -111,11 +112,20 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializerRead
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class ListCreateDestroyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    pass
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
     """ViewSet для работы с категориями."""
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
-    permission_classes = (TitlePermission,)
+    permission_classes = (IsAdminOrReadOnly,)  # мб дело в перимшне - но нет, был TitlePermission
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'

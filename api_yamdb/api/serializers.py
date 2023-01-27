@@ -45,12 +45,21 @@ class UserEditSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
+# class CategorySerializer(serializers.ModelSerializer):
+#     """Сериализатор для работы с категориями."""
+
+#     class Meta:
+#         model = Category
+#         fields = ('name', 'slug')
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор для работы с категориями."""
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
+        lookup_field = 'slug'
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
 
 
 class GenreSerializer(serializers.ModelSerializer):
