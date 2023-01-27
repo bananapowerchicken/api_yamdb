@@ -17,7 +17,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitleSerializerCreate, TitleSerializerRead,
                           TokenSerializer, UserEditSerializer, UserSerializer)
 from .utils import send_confirmation_code
-from rest_framework import mixins
+from .mixins import ListCreateDestroyViewSet
 
 
 @api_view(["POST"])
@@ -112,20 +112,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializerRead
 
 
-class ListCreateDestroyViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    pass
-
-
 class CategoryViewSet(ListCreateDestroyViewSet):
     """ViewSet для работы с категориями."""
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)  # мб дело в перимшне - но нет, был TitlePermission
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
