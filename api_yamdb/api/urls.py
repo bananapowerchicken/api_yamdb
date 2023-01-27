@@ -22,7 +22,7 @@ router_v1.register(
     CommentViewSet, basename='comments'
 )
 
-urlpatterns = [    
+urlpatterns = [
     path('v1/auth/signup/', register, name='register'),
     path('v1/auth/token/', get_user_token, name='token'),
     path('v1/', include(router_v1.urls)),

@@ -1,23 +1,24 @@
+from http import HTTPStatus
+
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from http import HTTPStatus
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitleFilterSet
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAdminOrAuthorOrReadOnly
+from .mixins import ListCreateDestroyViewSet
+from .permissions import IsAdmin, IsAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, RegisterDataSerializer,
                           ReviewSerializer, TitleSerializer,
-                          TitleSerializerCreate, TitleSerializerRead,
-                          TokenSerializer, UserEditSerializer, UserSerializer)
+                          TitleSerializerRead, TokenSerializer,
+                          UserEditSerializer, UserSerializer)
 from .utils import send_confirmation_code
-from .mixins import ListCreateDestroyViewSet
 
 
 @api_view(["POST"])
@@ -66,7 +67,7 @@ def get_user_token(request):
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'patch', 'delete', 'post')
     queryset = User.objects.all()
-    serializer_class = UserSerializer 
+    serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = ( IsAdmin , )
     filter_backends = (filters.SearchFilter,)
@@ -76,8 +77,8 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=[permissions.IsAuthenticated],    
-        serializer_class=UserEditSerializer,     
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserEditSerializer,
         pagination_class = PageNumberPagination
     )
     def users_own_profile(self, request):
@@ -108,7 +109,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
-            return TitleSerializerCreate
+            return TitleSerializer
         return TitleSerializerRead
 
 

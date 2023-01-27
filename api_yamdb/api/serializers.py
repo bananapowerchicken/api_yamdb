@@ -47,13 +47,8 @@ class UserEditSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-# class CategorySerializer(serializers.ModelSerializer):
-#     """Сериализатор для работы с категориями."""
-
-#     class Meta:
-#         model = Category
-#         fields = ('name', 'slug')
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с категориями произведений."""
 
     class Meta:
         model = Category
@@ -73,6 +68,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с произведениями."""
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
@@ -116,23 +112,6 @@ class TitleSerializerRead(serializers.ModelSerializer):
             'id', 'name', 'description', 'year', 'category', 'genre'
         )
         read_only_fields = ('id',)
-
-
-class TitleSerializerCreate(serializers.ModelSerializer):
-    """Сериализатор для работы с произведениями при создании."""
-    category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug'
-    )
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
-    )
-
-    class Meta:
-        model = Title
-        fields = ('id', 'name', 'description', 'year', 'category', 'genre')
 
 
 class ReviewSerializer(serializers.ModelSerializer):

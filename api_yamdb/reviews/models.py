@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (MaxValueValidator, MinValueValidator, 
-                                    RegexValidator)
+from django.core.validators import (MaxLengthValidator, MaxValueValidator,
+                                    MinValueValidator, RegexValidator)
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from .validators import year_validator
 
@@ -40,7 +41,7 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
-        validators=[      
+        validators=[
             RegexValidator(r'^[\w-]+$', "username содержит некорректные символы"),
         ],
     )
@@ -61,7 +62,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN     
+        return self.role == self.ADMIN
 
     class Meta:
         ordering = ['id']
@@ -72,14 +73,14 @@ class User(AbstractUser):
 class Category(models.Model):
     """Модель для работы с категориями"""
     name = models.CharField(
+        _('Название категории'),
         max_length=256,
         default='--Пусто--',
-        verbose_name='Название категории'
     )
     slug = models.SlugField(
+        _('Конвертер пути'),
         max_length=50,
         unique=True,
-        verbose_name='Конвертер пути'
     )
 
     class Meta:
@@ -93,13 +94,13 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель для работы с жанрами"""
     name = models.CharField(
+        _('Название жанра'),
         max_length=256,
-        verbose_name='Название жанра'
     )
     slug = models.SlugField(
+        _('Конвертер пути'),
         max_length=50,
         unique=True,
-        verbose_name='Конвертер пути'
     )
 
     class Meta:
@@ -113,13 +114,17 @@ class Genre(models.Model):
 class Title(models.Model):
     """Модель для работы с произведениями"""
     name = models.CharField(
-        max_length=256,
-        verbose_name='Название произведения',
-        blank=False
+        _('Название произведения'),
+        max_length=256, blank=False,
+        validators=[
+            MaxLengthValidator(
+                limit_value=256,
+                message='Не более 256 символов.')
+        ]
     )
-    year = models.SmallIntegerField(
+    year = models.PositiveSmallIntegerField(
+        _('Год создания произведения'),
         validators=[year_validator],
-        verbose_name='Год создания произведения'
     )
     description = models.TextField(
         blank=True,
@@ -128,10 +133,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        null=True,
-        db_index=True,
-        blank=False,
-        verbose_name='Жанр произведения'
+        through='GenreToTitle',
     )
     category = models.ForeignKey(
         Category,
@@ -154,6 +156,27 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name[:15]
+
+
+class GenreToTitle(models.Model):
+    """Модель связывающая произведение с жанром"""
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='genretitles',
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='genretitles',
+    )
+
+    class Meta:
+        ordering = ('genre',)
+
+    def __str__(self):
+        return f'{self.title} {self.genre}'
 
 
 class Review(models.Model):
