@@ -101,7 +101,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """ViewSet для работы с произведениями."""
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
-    permission_classes = (TitlePermission,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'name'
     # filter_backends = [DjangoFilterBackend]
     # filterset_class = TitleFilterSet
