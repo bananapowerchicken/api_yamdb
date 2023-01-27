@@ -5,7 +5,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    
+
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
@@ -15,7 +15,7 @@ class User(AbstractUser):
         (MODERATOR, 'Moderator'),
         (USER, 'User'),
     ]
-   
+
     role = models.CharField(
         max_length=150,
         choices=USER_ROLE_CHOICES,
@@ -60,7 +60,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN     
-    
+
     class Meta:
         ordering = ['id']
         verbose_name = 'Пользователь'
@@ -120,12 +120,8 @@ class Title(models.Model):
         null=True,
         verbose_name='Описание'
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True,
-        db_index=True,
-        blank=False,
         verbose_name='Жанр произведения'
     )
     category = models.ForeignKey(
@@ -196,12 +192,6 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель комментария к отзыву."""
-    title = models.ForeignKey(
-        Title,
-        verbose_name='Произведение',
-        on_delete=models.CASCADE,
-        related_name='comments'
-    )
     review = models.ForeignKey(
         Review,
         verbose_name='Отзыв',
