@@ -122,11 +122,11 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     """ViewSet для работы с жанрами."""
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
-    permission_classes = (TitlePermission,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
     lookup_field = 'slug'
