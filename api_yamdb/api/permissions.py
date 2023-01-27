@@ -29,22 +29,6 @@ class IsAdminOrAuthorOrReadOnly(permissions.BasePermission):
         )
 
 
-class TitlePermission(permissions.BasePermission):
-    """
-    Предоставление прав доступа для администратора и супер юзера
-    на добавление и удаление категорий, жанров и произведений.
-    """
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if not request.user.is_authenticated:
-            return False
-        if request.user.role == 'admin' or request.user.is_superuser:
-            return True
-        return False
-
-
 class IsAdminModeratorOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS

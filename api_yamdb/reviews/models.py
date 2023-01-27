@@ -188,6 +188,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        ordering = ['title']
         constraints = [
             models.UniqueConstraint(
                 name='unique_review',
@@ -224,3 +225,6 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text
+
+    class Meta:
+        ordering = ['pub_date']
