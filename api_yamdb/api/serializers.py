@@ -21,6 +21,17 @@ class RegisterDataSerializer(serializers.ModelSerializer):
         model = User
 
 
+class AdminRegisterDataSerializer(serializers.ModelSerializer):
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError("Username 'me' is not valid")
+        return value
+
+    class Meta:
+        fields = ('username', 'email',  'first_name', 'last_name')
+        model = User
+
+
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()

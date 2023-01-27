@@ -1,23 +1,27 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (MaxLengthValidator, MaxValueValidator,
-                                    MinValueValidator, RegexValidator)
+from django.core.validators import (MaxValueValidator, MinValueValidator, 
+                                    RegexValidator)
 from django.db import models
 
 from .validators import year_validator
 
 
 class User(AbstractUser):
+    
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
 
-    USER_ROLE_CHOICES = (
-        ('USR', 'user'),
-        ('MOD', 'moderator'),
-        ('ADM', 'admin'),
-    )
-
+    USER_ROLE_CHOICES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+   
     role = models.CharField(
-        max_length=3,
+        max_length=150,
         choices=USER_ROLE_CHOICES,
-        default='USR',
+        default=USER,
     )
 
     bio = models.TextField(
@@ -36,9 +40,8 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
-        validators=[
-            RegexValidator(r'^[\w.@+-]'),
-            # MaxLengthValidator(150),  # вот этот валидатор- уже на регистрацию через admin не повлиял
+        validators=[      
+            RegexValidator(r'^[\w-]+$', "username содержит некорректные символы"),
         ],
     )
 
@@ -46,7 +49,6 @@ class User(AbstractUser):
         'Имя',
         max_length=150,
         null=True,
-        default=" "
     )
 
     last_name = models.CharField(
@@ -59,7 +61,12 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == 'ADM'
+        return self.role == self.ADMIN     
+    
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Category(models.Model):

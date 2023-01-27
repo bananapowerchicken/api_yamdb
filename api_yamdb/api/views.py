@@ -1,9 +1,10 @@
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from http import HTTPStatus
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -15,38 +16,35 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           ReviewSerializer, TitleSerializer,
                           TitleSerializerCreate, TitleSerializerRead,
                           TokenSerializer, UserEditSerializer, UserSerializer)
+from .utils import send_confirmation_code
 
-yamdb_mail = 'YaMDb@gmail.com'
 
-# регистрация по api для любого желающего
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
+
+    email=request.data.get('email')
+    username=request.data.get('username')
+
+    if User.objects.filter(username=username, email=email).exists():
+        user = User.objects.get(username=username, email=email)
+        send_confirmation_code(user)
+
+        return Response(status=HTTPStatus.OK)
+
     serializer.is_valid(raise_exception=True)
     serializer.save()
     user = get_object_or_404(
         User,
-        username=serializer.validated_data['username']
+        username=serializer.validated_data['username'],
     )
-    # создаю токен и сразу привязываю его к объекту user
-    confirmation_code = default_token_generator.make_token(user)
-    # и теперь надо этот код отправить по почте
-    send_mail(
-        'YaMDb registration',
-        f'Here is your confirmation code to use: {confirmation_code}',
-        yamdb_mail,  # мб тут просто None поставить и это вообще не нужно?
-        [user.email],
-        fail_silently=False,
-    )
+    send_confirmation_code(user)
 
-    # не знаю, что тут грамотнее возвращать, пока оставлю такой вариант
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data, status=HTTPStatus.OK)
 
-
-# получение токена после регистрации для любого желающего по API
 @api_view(["POST"])
-@permission_classes([permissions.AllowAny])  # но мб тут дб только авторизованные - не знаю
+@permission_classes([permissions.AllowAny])
 def get_user_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -65,28 +63,28 @@ def get_user_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    http_method_names = ['post', 'get', 'patch', 'delete']  # эта строка будто тоже не имеет влияния!
+    http_method_names = ('get', 'patch', 'delete', 'post')
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserSerializer 
     lookup_field = 'username'
-    permission_classes = (IsAdmin,)
+    permission_classes = ( IsAdmin , )
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
     @action(
-        methods=[
-            "get",
-            "patch",
-        ],
+        methods=['get', 'patch'],
         detail=False,
-        url_path="me",
-        permission_classes=[permissions.IsAuthenticated],
-        serializer_class=UserEditSerializer,
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],    
+        serializer_class=UserEditSerializer,     
+        pagination_class = PageNumberPagination
     )
     def users_own_profile(self, request):
         user = request.user
-        if request.method == "GET":
+        if request.method == 'GET':
             serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == "PATCH":
+            return Response(serializer.data, status=HTTPStatus.OK)
+        if request.method == 'PATCH':
             serializer = self.get_serializer(
                 user,
                 data=request.data,
