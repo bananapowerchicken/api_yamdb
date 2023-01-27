@@ -1,6 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 # from django_filters.rest_framework import DjangoFilterBackend
+import django_filters
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from http import HTTPStatus
@@ -9,8 +10,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
-# from .filters import TitleFilterSet
-from .permissions import IsAdmin, TitlePermission, IsAdminOrReadOnly
+from .filters import TitleFilterSet
+from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, RegisterDataSerializer,
                           ReviewSerializer, TitleSerializer,
@@ -103,8 +104,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'name'
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_class = TitleFilterSet
+    filter_backends = [django_filters.DjangoFilterBackend]
+    filterset_class = TitleFilterSet
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
