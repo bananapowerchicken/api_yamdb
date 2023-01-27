@@ -47,13 +47,26 @@ class UserEditSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
+# class CategorySerializer(serializers.ModelSerializer):
+#     """Сериализатор для работы с категориями."""
+
+#     class Meta:
+#         model = Category
+#         fields = ('name', 'slug')
 class CategorySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
+        lookup_field = 'slug'
+        extra_kwargs = {
+            'url': {'lookup_field': 'slug'}
+        }
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с жанрами произведений."""
+
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -90,6 +103,36 @@ class TitleSerializer(serializers.ModelSerializer):
         rating = score_sum / score_count
         rating = int(rating + (0.5 if rating > 0 else -0.5))
         return round(rating)
+
+
+class TitleSerializerRead(serializers.ModelSerializer):
+    """Сериализатор для работы с произведениями при чтении."""
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'description', 'year', 'category', 'genre'
+        )
+        read_only_fields = ('id',)
+
+
+class TitleSerializerCreate(serializers.ModelSerializer):
+    """Сериализатор для работы с произведениями при создании."""
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'description', 'year', 'category', 'genre')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
