@@ -70,7 +70,6 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(), slug_field='slug', many=True
     )
-    # rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -107,22 +106,6 @@ class TitleSerializerRead(serializers.ModelSerializer):
         rating = score_sum / score_count
         rating = int(rating + (0.5 if rating > 0 else -0.5))
         return round(rating)
-
-class TitleSerializerCreate(serializers.ModelSerializer):
-    """Сериализатор для работы с произведениями при создании."""
-    category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug'
-    )
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
-    )
-
-    class Meta:
-        model = Title
-        fields = ('id', 'name', 'description', 'year', 'category', 'genre')
 
 
 class ReviewSerializer(serializers.ModelSerializer):

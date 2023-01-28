@@ -16,8 +16,8 @@ from .permissions import IsAdmin, IsAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, RegisterDataSerializer,
                           ReviewSerializer, TitleSerializer,
-                          TitleSerializerCreate, TitleSerializerRead,
-                          TokenSerializer, UserEditSerializer, UserSerializer)
+                          TitleSerializerRead, TokenSerializer,
+                          UserEditSerializer, UserSerializer)
 from .utils import send_confirmation_code
 
 
@@ -26,8 +26,8 @@ from .utils import send_confirmation_code
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
 
-    email=request.data.get('email')
-    username=request.data.get('username')
+    email = request.data.get('email')
+    username = request.data.get('username')
 
     if User.objects.filter(username=username, email=email).exists():
         user = User.objects.get(username=username, email=email)
@@ -45,6 +45,7 @@ def register(request):
 
     return Response(serializer.data, status=HTTPStatus.OK)
 
+
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def get_user_token(request):
@@ -59,27 +60,27 @@ def get_user_token(request):
         serializer.validated_data['confirmation_code']
     ):
         token = AccessToken.for_user(user)
-        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+        return Response({'token': str(token)}, status=HTTPStatus.OK)
 
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'patch', 'delete', 'post')
     queryset = User.objects.all()
-    serializer_class = UserSerializer 
+    serializer_class = UserSerializer
     lookup_field = 'username'
-    permission_classes = ( IsAdmin , )
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
+    permission_classes = (IsAdmin, )
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('username', )
 
     @action(
         methods=['get', 'patch'],
         detail=False,
         url_path='me',
-        permission_classes=[permissions.IsAuthenticated],    
-        serializer_class=UserEditSerializer,     
-        pagination_class = PageNumberPagination
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserEditSerializer,
+        pagination_class=PageNumberPagination
     )
     def users_own_profile(self, request):
         user = request.user
@@ -94,27 +95,25 @@ class UserViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response(serializer.data, status=HTTPStatus.OK)
+        return Response(status=HTTPStatus.METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """ViewSet для работы с произведениями."""
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'id'
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilterSet
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
-            return TitleSerializerCreate
+            return TitleSerializer
         return TitleSerializerRead
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    """ViewSet для работы с категориями."""
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -124,7 +123,6 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
-    """ViewSet для работы с жанрами."""
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -134,7 +132,6 @@ class GenreViewSet(ListCreateDestroyViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """ViewSet для просмотра и редактирования отзывов."""
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
@@ -152,8 +149,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    """ViewSet для просмотра и редактирования комментариев к отзывам."""
+class CommentViewSet(viewsets.ModelViewSet):    
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
