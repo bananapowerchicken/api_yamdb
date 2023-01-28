@@ -1,4 +1,3 @@
-from django.core.validators import MaxLengthValidator, RegexValidator
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -23,17 +22,6 @@ class RegisterDataSerializer(serializers.ModelSerializer):
         model = User
 
 
-class AdminRegisterDataSerializer(serializers.ModelSerializer):
-    def validate_username(self, value):
-        if value.lower() == 'me':
-            raise serializers.ValidationError("Username 'me' is not valid")
-        return value
-
-    class Meta:
-        fields = ('username', 'email',  'first_name', 'last_name')
-        model = User
-
-
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
@@ -41,23 +29,19 @@ class TokenSerializer(serializers.Serializer):
 
 class UserEditSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("username", "email", "first_name",
-                  "last_name", "bio", "role")
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio',
+                  'role')
         model = User
         read_only_fields = ('role',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор для работы с категориями."""
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор для работы с жанрами произведений."""
-
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -73,14 +57,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'description',
-            'category',
-            'genre',
-        )
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre')
 
 
 class TitleSerializerRead(serializers.ModelSerializer):
@@ -91,9 +68,8 @@ class TitleSerializerRead(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'description', 'year', 'category', 'genre', 'rating'
-        )
+        fields = ('id', 'name', 'description', 'year', 'category', 'genre',
+                  'rating')
         read_only_fields = ('id',)
 
     def get_rating(self, obj):
@@ -120,7 +96,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         title_id = self.context['view'].kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
         author = self.context.get('request').user
-        if (title.reviews.filter(author=author).exists() and self.context.get('request').method != 'PATCH'):
+        if (title.reviews.filter(author=author).exists()
+           and self.context.get('request').method != 'PATCH'):
             raise serializers.ValidationError(
                 'Вы можете оставить только один отзыв на произведение.'
             )
