@@ -102,7 +102,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().order_by('name')
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    lookup_field = 'name'
+    lookup_field = 'id'  # 'name'
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilterSet
 
