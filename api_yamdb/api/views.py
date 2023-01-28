@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -12,7 +12,8 @@ from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitleFilterSet
 from .mixins import ListCreateDestroyViewSet
-from .permissions import IsAdmin, IsAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
+from .permissions import (IsAdmin, IsAdminModeratorOwnerOrReadOnly,
+                          IsAdminOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, RegisterDataSerializer,
                           ReviewSerializer, TitleSerializer,
@@ -21,7 +22,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 from .utils import send_confirmation_code
 
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
@@ -46,7 +47,7 @@ def register(request):
     return Response(serializer.data, status=HTTPStatus.OK)
 
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def get_user_token(request):
     serializer = TokenSerializer(data=request.data)
@@ -135,9 +136,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsAdminOrAuthorOrReadOnly
+        IsAdminModeratorOwnerOrReadOnly
     ]
-    
 
     def get_queryset(self):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -149,11 +149,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):    
+class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
-        IsAdminOrAuthorOrReadOnly
+        IsAdminModeratorOwnerOrReadOnly
     ]
 
     def get_queryset(self):
