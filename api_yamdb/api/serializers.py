@@ -61,7 +61,6 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializerRead(serializers.ModelSerializer):
-    """Сериализатор для работы с произведениями при чтении."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
