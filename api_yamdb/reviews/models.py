@@ -7,7 +7,7 @@ from .validators import year_validator
 
 
 class User(AbstractUser):
-
+    """ Модель пользователя"""
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
@@ -40,8 +40,8 @@ class User(AbstractUser):
         'Имя пользователя',
         max_length=150,
         unique=True,
-        validators=[      
-            RegexValidator(r'^[\w-]+$', "username содержит некорректные символы"),
+        validators=[
+            RegexValidator(r'^[\w-]+$', 'В username некорректные символы'),
         ],
     )
 
@@ -131,7 +131,7 @@ class Title(models.Model):
         verbose_name='Описание'
     )
     genre = models.ManyToManyField(
-        Genre,   
+        Genre,
         db_index=True,
         blank=False,
         verbose_name='Жанр произведения'
