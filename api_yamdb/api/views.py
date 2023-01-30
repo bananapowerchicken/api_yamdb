@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, viewsets
@@ -89,7 +90,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().order_by('name')
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('name')
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'id'
