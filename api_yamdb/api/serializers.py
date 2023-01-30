@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Avg, Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -72,15 +72,13 @@ class TitleSerializerRead(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
     def get_rating(self, obj):
-        score_sum = Review.objects.filter(title_id=obj.id).aggregate(
-            Sum('score')).get('score__sum')
-        score_sum = int(0 if score_sum is None else score_sum)
-        score_count = Review.objects.filter(title_id=obj.id).count()
-        if score_count == 0:
-            return None
-        rating = score_sum / score_count
-        rating = int(rating + (0.5 if rating > 0 else -0.5))
-        return round(rating)
+        """Получаем среднюю оценку произведения по оценкам пользователей"""
+        rating = Review.objects.filter(
+            title=obj.id
+        ).aggregate(Avg('score'))['score__avg']
+        if rating is not None:
+            return round(rating)
+        return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):

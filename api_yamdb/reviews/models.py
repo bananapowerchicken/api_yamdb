@@ -121,7 +121,7 @@ class Title(models.Model):
         verbose_name='Название произведения',
         blank=False
     )
-    year = models.SmallIntegerField(
+    year = models.PositiveSmallIntegerField(
         validators=[year_validator],
         verbose_name='Год создания произведения'
     )
