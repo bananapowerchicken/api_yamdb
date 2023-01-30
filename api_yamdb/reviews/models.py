@@ -176,12 +176,12 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews'
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         'Оценка',
         help_text='Оцените произведение от 1 до 10',
         validators=[
-            MinValueValidator(1),
-            MaxValueValidator(10)
+            MinValueValidator(1, message='Минимальная оценка - 1'),
+            MaxValueValidator(10, message='Максимальная оценка - 10')
         ]
     )
     pub_date = models.DateTimeField(
@@ -226,8 +226,8 @@ class Comment(models.Model):
         db_index=True
     )
 
-    def __str__(self):
-        return self.text
-
     class Meta:
         ordering = ['pub_date']
+
+    def __str__(self):
+        return self.text
