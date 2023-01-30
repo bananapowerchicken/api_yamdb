@@ -26,23 +26,20 @@ from .utils import send_confirmation_code
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
+    print('STEP 1')
+    serializer.is_valid(raise_exception=True)  # опять срабатывает сериализатор
+    print('STEP 2')
+    username = serializer.validated_data.get('username')
+    email = serializer.validated_data.get('email')
+    print('STEP 3')
+    print(email, username)
 
-    email = request.data.get('email')
-    username = request.data.get('username')
-
-    if User.objects.filter(username=username, email=email).exists():
-        user = User.objects.get(username=username, email=email)
-        send_confirmation_code(user)
-
-        return Response(status=HTTPStatus.OK)
-
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username'],
-    )
+    user, created = User.objects.get_or_create(username=username, email=email)    
+    print('STEP 4')
+    print(created)
+    print('STEP 5')
     send_confirmation_code(user)
+    print('STEP 6')
 
     return Response(serializer.data, status=HTTPStatus.OK)
 

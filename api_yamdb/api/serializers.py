@@ -2,6 +2,9 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework.validators import UniqueValidator
+from django.core.validators import MaxLengthValidator, RegexValidator
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -11,15 +14,32 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
-class RegisterDataSerializer(serializers.ModelSerializer):
+# идея такая, чтобы сделать этот сериалайзер унаследованным от serialize, а был - ModelSerializer
+class RegisterDataSerializer(serializers.Serializer):
+    username = serializers.CharField(validators=[
+                                     UniqueValidator(queryset=User.objects.all()),
+                                     UnicodeUsernameValidator,
+                                     MaxLengthValidator(150),
+                                     RegexValidator(r'^[\w-]+$', 'В username некорректные символы')
+                                     ])
+    email = serializers.EmailField(validators=[
+                                   UniqueValidator(queryset=User.objects.all()),
+                                   MaxLengthValidator(254)])
+
     def validate_username(self, value):
-        if value.lower() == 'me':
+        if value.lower() == "me":
             raise serializers.ValidationError("Username 'me' is not valid")
         return value
 
-    class Meta:
-        fields = ('username', 'email')
-        model = User
+# class RegisterDataSerializer(serializers.ModelSerializer):
+#     def validate_username(self, value):
+#         if value.lower() == "me":
+#             raise serializers.ValidationError("Username 'me' is not valid")
+#         return value
+
+#     class Meta:
+#         fields = ('username', 'email')
+#         model = User
 
 
 class TokenSerializer(serializers.Serializer):
