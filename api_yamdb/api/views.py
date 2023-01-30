@@ -28,6 +28,7 @@ def register(request):
     serializer = RegisterDataSerializer(data=request.data)
     print('STEP 1')
     serializer.is_valid(raise_exception=True)  # опять срабатывает сериализатор
+    # и он разумно выдает ошибку, т к поля дб уникальные, а при втором заходе они не уникальные
     print('STEP 2')
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
