@@ -1,10 +1,10 @@
+import operator
+
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MaxLengthValidator, RegexValidator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.validators import MaxLengthValidator, RegexValidator
-
-import operator
 
 
 class UserSerializer(serializers.ModelSerializer):
