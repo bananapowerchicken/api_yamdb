@@ -59,6 +59,11 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ['email']
 
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     @property
     def is_admin(self):
         return self.role == self.ADMIN
@@ -66,11 +71,6 @@ class User(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
-
-    class Meta:
-        ordering = ['id']
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
 
 
 class Category(models.Model):
