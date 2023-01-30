@@ -89,6 +89,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ['name']
 
     def __str__(self):
         return self.name[:15]
@@ -109,6 +110,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+        ordering = ['name']
 
     def __str__(self):
         return self.name[:15]
@@ -121,7 +123,7 @@ class Title(models.Model):
         verbose_name='Название произведения',
         blank=False
     )
-    year = models.SmallIntegerField(
+    year = models.PositiveSmallIntegerField(
         validators=[year_validator],
         verbose_name='Год создания произведения'
     )
@@ -148,6 +150,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ['name']
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'year'],
