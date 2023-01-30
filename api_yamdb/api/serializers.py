@@ -3,11 +3,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from django.core.validators import MaxLengthValidator, RegexValidator
-from http import HTTPStatus
-from rest_framework.response import Response
+
 import operator
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,61 +15,30 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
 
-# идея такая, чтобы сделать этот сериалайзер унаследованным от serialize, а был - ModelSerializer
 class RegisterDataSerializer(serializers.Serializer):
     username = serializers.CharField(validators=[
-                                    #  UniqueValidator(queryset=User.objects.all()),
                                      UnicodeUsernameValidator,
                                      MaxLengthValidator(150),
-                                     RegexValidator(r'^[\w-]+$', 'В username некорректные символы')
+                                     RegexValidator(
+                                         r'^[\w-]+$',
+                                         'В username некорректные символы')
                                      ])
     email = serializers.EmailField(validators=[
-                                #    UniqueValidator(queryset=User.objects.all()),
                                    MaxLengthValidator(254)])
 
     def validate_username(self, value):
         if value.lower() == "me":
             raise serializers.ValidationError("Username 'me' is not valid")
-        
+
         return value
 
     def validate(self, data):
-        print('IN VALIDATOR')
-        username_exist = False
-        email_exist = False
-
-        if User.objects.filter(username=data['username']).exists():
-            username_exist = True
-
-        if User.objects.filter(email=data['email']).exists():
-            email_exist = True
-        
-        print(username_exist, email_exist) 
-        print(operator.xor(username_exist, email_exist))
-        if not operator.xor(username_exist, email_exist):
-            print('NEW OR REPEAT')
-            return data
+        if operator.xor(
+                User.objects.filter(username=data['username']).exists(),
+                User.objects.filter(email=data['email']).exists()):
+            raise serializers.ValidationError("Email or username isn't unique")
         else:
-            print('ERRROR: NOT UNIQUE')
-            raise serializers.ValidationError("ERRRRROOOORR")
-
-
-
-    # class Meta:
-    #     validators = [UniqueTogetherValidator(
-    #             queryset=User.objects.all(),
-    #             fields=['username', 'email']
-    #         )]
-
-# class RegisterDataSerializer(serializers.ModelSerializer):
-#     def validate_username(self, value):
-#         if value.lower() == "me":
-#             raise serializers.ValidationError("Username 'me' is not valid")
-#         return value
-
-#     class Meta:
-#         fields = ('username', 'email')
-#         model = User
+            return data
 
 
 class TokenSerializer(serializers.Serializer):

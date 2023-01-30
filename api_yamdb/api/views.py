@@ -26,21 +26,11 @@ from .utils import send_confirmation_code
 @permission_classes([permissions.AllowAny])
 def register(request):
     serializer = RegisterDataSerializer(data=request.data)
-    print('STEP 1')
-    serializer.is_valid(raise_exception=True)  # опять срабатывает сериализатор
-    # и он разумно выдает ошибку, т к поля дб уникальные, а при втором заходе они не уникальные
-    print('STEP 2')
+    serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
-    print('STEP 3')
-    print(email, username)
-
-    user, created = User.objects.get_or_create(username=username, email=email)    
-    print('STEP 4')
-    print(created)
-    print('STEP 5')
+    user, created = User.objects.get_or_create(username=username, email=email)
     send_confirmation_code(user)
-    print('STEP 6')
 
     return Response(serializer.data, status=HTTPStatus.OK)
 
