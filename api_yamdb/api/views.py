@@ -97,7 +97,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilterSet
-    ordering_fields = 'rating'
+    ordering_fields = ['rating']
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
