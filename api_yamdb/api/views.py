@@ -91,12 +91,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
-        rating=Avg('reviews__score')).order_by('name')
+        rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
     lookup_field = 'id'
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilterSet
+    ordering_fields = 'rating'
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'DELETE',):
