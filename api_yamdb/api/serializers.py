@@ -1,5 +1,3 @@
-import operator
-
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxLengthValidator, RegexValidator
 from django.shortcuts import get_object_or_404
@@ -26,18 +24,17 @@ class RegisterDataSerializer(serializers.Serializer):
                                    MaxLengthValidator(254)])
 
     def validate_username(self, value):
-        if value.lower() == "me":
-            raise serializers.ValidationError("Username 'me' is not valid")
+        if value.lower() == 'me':
+            raise serializers.ValidationError('Username "me" is not valid')
 
         return value
 
     def validate(self, data):
-        if operator.xor(
-                User.objects.filter(username=data['username']).exists(),
-                User.objects.filter(email=data['email']).exists()):
-            raise serializers.ValidationError("Email or username isn't unique")
-        else:
-            return data
+        if (User.objects.filter(username=data['username']).exists()
+           != User.objects.filter(email=data['email']).exists()):
+            raise serializers.ValidationError('Email or username not unique')
+
+        return data
 
 
 class TokenSerializer(serializers.Serializer):
