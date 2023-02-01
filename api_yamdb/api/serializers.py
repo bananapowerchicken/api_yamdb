@@ -31,7 +31,7 @@ class RegisterDataSerializer(serializers.Serializer):
 
     def validate(self, data):
         if (User.objects.filter(username=data['username']).exists()
-           != User.objects.filter(email=data['email']).exists()):
+           ^ User.objects.filter(email=data['email']).exists()):
             raise serializers.ValidationError('Email or username not unique')
 
         return data
