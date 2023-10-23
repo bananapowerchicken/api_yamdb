@@ -54,7 +54,7 @@ python manage.py migrate --run-syncdb
 If necessary, fill the database with test data using the command:
 
 ```bash
-python manage.py load_data
+python manage.py import_csv
 ```
 
 We create a superuser, then change the role in the admin panel from user to admin:
@@ -66,7 +66,7 @@ python manage.py createsuperuser
 Start project:
 
 ```bash
-python manage.py runserver localhost:80
+python manage.py runserver localhost
 ```
 
 ### Examples of working with the API for all users
