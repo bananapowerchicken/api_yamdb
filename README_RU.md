@@ -25,6 +25,11 @@
 
 ### Запуск проекта в dev-режиме
 - Клонировать репозиторий и перейти в него в командной строке.
+```bash
+git clone git@github.com:bananapowerchicken/api_yamdb.git
+cd api_yamdb
+```
+  
 - Установите и активируйте виртуальное окружение c учетом версии Python 3.7 (выбираем python не ниже 3.7):
 
 ```bash
@@ -35,19 +40,22 @@ py -m venv venv
 source venv/Scripts/activate
 ```
 
-- Затем нужно установить все зависимости из файла requirements.txt
+- Установите или обновите pip:
 
 ```bash
 python -m pip install --upgrade pip
 ```
 
+- Затем нужно установить все зависимости из файла requirements.txt
+  
 ```bash
 pip install -r requirements.txt
 ```
 
-- Выполняем миграции:
+- Выполняем миграции в папке с файлом manage.py:
 
 ```bash
+cd api_yamdb
 python manage.py migrate --run-syncdb
 ```
 
